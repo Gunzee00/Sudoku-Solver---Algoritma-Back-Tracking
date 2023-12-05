@@ -2,38 +2,36 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script text="javascript">
-  // csrf token untuk POST requests di pemanggilan AJAX
+
   const token = "{{ csrf_token }}";
 
-  // HTML for speed buttons made using django template. speed_options are passed through
-  // home view in views.py
+ 
   const speedBtns = `<p>Speed:</p>
         {% for speed in speed_options %}
         <button class="dial" id="{{speed}}">{{ speed }}</button>
         {% endfor %}`;
       
-  // Gets the speed options in dictionary format
+
   const speedOptions = JSON.parse(
     "{{speed_options | safe}}".replaceAll("'", '"')
   );
 
-  // Default message to show at message bar
-  const defaulMsg = "Solve the sudoku board or press solve button so I can solve it";
+ 
+  const defaulMsg = "Isi kotak sudokunya ya!";
 
   let numberOfSteps = 0;
-  let timeDelay = Object.values(speedOptions)[0]; // time delay between each iteration in solve animation
-  let prev = Object.keys(speedOptions)[0]; // Taking default speed as first value in dictionary
+  let timeDelay = Object.values(speedOptions)[0]; 
+  let prev = Object.keys(speedOptions)[0]; 
   let solving = false;
-  let msgChanging = false; // If msg is pending to change inn changeMsg() function
-  let solved = false; // If all cells are solved in board
-  let paused = false; // If game or solving is paused
+  let msgChanging = false; 
+  let solved = false; 
+  let paused = false; 
 
-  // Just pauses the execution for given seconds of time
+  
   async function normalSleep(s) {
     return new Promise((resolve) => setTimeout(resolve, s * 1000));
   }
 
-  // Pauses execution until game/solving is resumed
   async function sleep(s) {
     return new Promise((resolve) => {
       let temp = s;
@@ -45,7 +43,7 @@
         }
       });
     }).then((resolve) => {
-      clearInterval(f); // Clearing interval or it will keep running in background
+      clearInterval(f); 
       return resolve;
     });
   }
@@ -199,7 +197,7 @@
           // also adds/removes respective class for cell; wrong, solved, current or empty cell
           if (item[1] === " ") {
             if ((msgChanging == false) & (paused == false)) {
-              changeMsg("Backtracking...");
+              changeMsg("Sedang Menyelesaikan...");
             }
             currentElement.classList.add("empty-cell");
             currentElement.classList.remove("solved-cell");
@@ -207,7 +205,7 @@
           } else {
 
             if ((msgChanging == false) & (paused == false)) {
-              changeMsg("Solving...");
+              changeMsg("Menyelesaikan...");
             }
             currentElement.classList.remove("empty-cell", "wrong-cell");
             currentElement.classList.add("solved-cell");
@@ -218,7 +216,7 @@
         }
       
         if (data.if_solved){
-            changeMsg("Hurray Solved!");
+            changeMsg("Yeay, Berhasil!");
             clearInterval(timer); // stop timer
             solved = true;
         }else{
@@ -230,7 +228,7 @@
         
       },
       error: function(){
-        alert("Something went wrong! :(")
+        alert("Ada yang salah:(")
       }
     });
   });
@@ -255,17 +253,17 @@
       },
       success: function (data) {
         if (data.is_correct) {
-          changeMsg("Correct!", 1, defaulMsg);
+          changeMsg("Benar, kamu hebat!", 1, defaulMsg);
           currentElementClasses.remove("empty-cell", "wrong-cell");
           currentElementClasses.add("solved-cell");
 
         } else if (val === "") {
-          changeMsg("Backtracking huh :)", 1, defaulMsg);
+          changeMsg("Tunggu sebentar :)", 1, defaulMsg);
           currentElementClasses.remove("wrong-cell", "solved-cell");
           currentElementClasses.add("empty-cell");
 
         } else {
-          changeMsg("Try again!", 1, defaulMsg);
+          changeMsg("Salah, coba lagi!", 1, defaulMsg);
           currentElementClasses.remove("solved-cell", "empty-cell");
           currentElementClasses.add("wrong-cell");
         }

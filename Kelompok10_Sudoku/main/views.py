@@ -5,14 +5,16 @@ from .apps import boards
 import random
 import copy
 
-# Main page, It chooses a random board from 'boards' and also passes speed options.
-# The initial_board is the initial state of board and is a global variable
+
+# Halaman utama, memilih papan acak dari 'papan' dan juga melewati opsi kecepatan.
+# Initial_board adalah keadaan awal papan dan merupakan variabel global
 def home(response):
     global initial_board
 
     initial_board = random.choice(boards)
-    # Copied array so the initial_board doesn't changes 
-    # when changes are made into sudoku_board.
+    
+# Menyalin array sehingga initial_board tidak berubah
+    # ketika perubahan dilakukan pada sudoku_board.
 
     sudoku_board = copy.deepcopy(initial_board)
     speed_options = {
@@ -27,36 +29,39 @@ def home(response):
 
     return render(response, 'main/index.html', context)
 
-# It is called through a AJAX call when user changes the number in board. 
-# It returns a JSONresponse containing a boolean value if it is correct by
-# using functions from solver.py and also returns a boolean value whether all cells are solved.
+# Dipanggil melalui panggilan AJAX ketika pengguna mengubah nomor di papan.
+# Ini mengembalikan respons JSON yang berisi nilai boolean jika benar
+# menggunakan fungsi dari solver.py dan juga mengembalikan nilai boolean apakah semua sel terselesaikan.
 def check(response):
     if response.method == "POST":
-        # The data contains x and y coordinates of element in array which is changed,
-        # the value which it is changed into.
+       
+# Data berisi koordinat x dan y elemen dalam array yang diubah,
+        # nilai yang diubah menjadi.
         data = response.POST
         sudoku_board = copy.deepcopy(initial_board)
         x, y = data.get('pos').split("x")
         x, y = int(x), int(y)
         val = data.get('val')
 
-        # Returns False if value is not digit or if it is 0 or if it has more than one character
-        # It can't have more than one character as set in HTML but F12...
+        # Mengembalikan False jika nilainya bukan digit atau 0 atau jika memiliki lebih dari satu karakter
+       
         if not str(val).isdigit() or int(val) == 0 or len(str(val)) > 1:
             return JsonResponse({'is_correct': False, 'all_solved':False})
 
-        # Changing that value in copied board and passing it to solve function from solver.py
+       
+# Mengubah nilai tersebut di papan yang disalin dan meneruskannya ke fungsi penyelesaian dari solver.py
         sudoku_board[x][y] = int(val)
         
         is_correct, _, _ = solve(sudoku_board, [])
 
-        # Making changes to original board if it's correct
+       # Melakukan perubahan pada board asli jika sudah benar
         if is_correct:
             initial_board[x][y] = int(val)
         else:
             initial_board[x][y] = 0
 
-        # Checking if all cells are solved
+       
+# Memeriksa apakah semua sel terpecahkan
         all_solved = not bool(empty_cell(initial_board))
 
         data = {
@@ -67,12 +72,12 @@ def check(response):
     else:
         return JsonResponse({})
 
-# Returns a JSONresponse containing steps and a boolean value telling if it was solved or not
-# Steps is a 2D array containing x and y coordinates, and the value it was changed to
-# Called by AJAX call when user clicks solve
+# Mengembalikan respons JSON yang berisi langkah-langkah dan nilai boolean yang memberitahukan apakah masalah tersebut terselesaikan atau tidak
+# Langkah adalah array 2D yang berisi koordinat x dan y, dan nilainya diubah
+# Dipanggil dengan panggilan AJAX ketika pengguna mengklik selesaikan
 def get_steps(response):
     if response.method == "POST":
-        sudoku_board = copy.deepcopy(initial_board) # Copying the current instance of initial board
+        sudoku_board = copy.deepcopy(initial_board)  # Menyalin contoh papan awal saat ini
         d = []
         if_solved, steps, _ = solve(sudoku_board, d)
         return JsonResponse({"steps":steps, "if_solved":if_solved})
